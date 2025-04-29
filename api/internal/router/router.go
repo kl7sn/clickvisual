@@ -28,7 +28,7 @@ func GetServerRouter() *egin.Component {
 	serveFromSubPath := econf.GetBool("app.serveFromSubPath")
 	r := invoker.Gin
 	r.Use(invoker.Session)
-	r.NoRoute(egin.Gzip(egin.DefaultCompression, egin.WithGzipExcludedExtensions([]string{"", ".html"})), core.Handle(func(c *core.Context) {
+	r.NoRoute(egin.Gzip(egin.DefaultCompression, egin.WithGzipExcludedExtensions([]string{"", " ",".html", ".htm"})), core.Handle(func(c *core.Context) {
 		prefix := "/api/"
 		if serveFromSubPath {
 			prefix = appSubUrl + prefix

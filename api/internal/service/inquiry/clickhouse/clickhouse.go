@@ -2153,7 +2153,7 @@ func (c *ClickHouseX) groupBySQL(param view.ReqQuery) (sql string) {
 func (c *ClickHouseX) doQueryWithRetry(sql string, isShowNull bool) (res []map[string]interface{}, err error) {
 	res, err = c.doQuery(sql, isShowNull)
 	if err != nil {
-		if strings.Contains(err.Error(), "Authentication failed: password is incorrect") {
+		if strings.Contains(err.Error(), "password is incorrect") {
 			return c.doQuery(sql, isShowNull)
 		}
 	}

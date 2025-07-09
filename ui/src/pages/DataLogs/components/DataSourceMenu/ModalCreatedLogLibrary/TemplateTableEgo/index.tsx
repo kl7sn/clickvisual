@@ -1,5 +1,5 @@
-import {Form, Input, InputNumber} from "antd";
-import {useIntl} from "umi";
+import { Form, Input, InputNumber } from "antd";
+import { useIntl } from "umi";
 
 export interface TemplateTableType {
   //   formRef: any;
@@ -12,6 +12,7 @@ const TemplateTable = (props: TemplateTableType) => {
       <Form.Item
         name={"brokers"}
         label={"Brokers"}
+        initialValue="kafka-service.default:9092"
         rules={[{ required: true }]}
       >
         <Input
@@ -36,6 +37,7 @@ const TemplateTable = (props: TemplateTableType) => {
       <Form.Item
         name={"topicsApp"}
         label={"App stdout topic"}
+        initialValue="app-stdout-logs-ilogtail"
         rules={[{ required: true }]}
       >
         <Input
@@ -48,6 +50,7 @@ const TemplateTable = (props: TemplateTableType) => {
       <Form.Item
         name={"topicsEgo"}
         label={"Ego stdout topic"}
+        initialValue="ego-stdout-logs-ilogtail"
         rules={[{ required: true }]}
       >
         <Input
@@ -60,6 +63,7 @@ const TemplateTable = (props: TemplateTableType) => {
       <Form.Item
         name={"topicsIngressStdout"}
         label={"Ingress stdout topic"}
+        initialValue="ingress-stdout-logs-ilogtail"
         rules={[{ required: true }]}
       >
         <Input
@@ -72,6 +76,7 @@ const TemplateTable = (props: TemplateTableType) => {
       <Form.Item
         name={"topicsIngressStderr"}
         label={"Ingress stderr topic"}
+        initialValue="ingress-stderr-logs-ilogtail"
         rules={[{ required: true }]}
       >
         <Input

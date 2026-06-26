@@ -130,6 +130,7 @@ export interface TablesResponse {
   tableName: string;
   createType: number;
   desc: string;
+  brokers?: string;
   relTraceTableId: number;
 }
 

@@ -1,4 +1,4 @@
-import { Form, Input, InputNumber } from "antd";
+import { AutoComplete, Form, Input, InputNumber } from "antd";
 import { useIntl } from "umi";
 import TextArea from "antd/lib/input/TextArea";
 import JsonAsString from "./JsonAsString";
@@ -8,8 +8,9 @@ const NewTable = (props: {
   onConversionMappingJson: (str: string) => void;
   formRef: any;
   mode: number;
+  brokerOptions: { value: string }[];
 }) => {
-  const { onConversionMappingJson, formRef, mode } = props;
+  const { onConversionMappingJson, formRef, mode, brokerOptions } = props;
   const i18n = useIntl();
 
   return (
@@ -85,7 +86,8 @@ const NewTable = (props: {
           },
         ]}
       >
-        <Input
+        <AutoComplete
+          options={brokerOptions}
           placeholder={`${i18n.formatMessage({
             id: "datasource.logLibrary.placeholder.brokers",
           })}`}

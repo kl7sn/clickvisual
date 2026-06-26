@@ -226,7 +226,7 @@ func (c *Databend) CreateStorage(did int, database db2.BaseDatabase, ct view2.Re
 		return
 	}
 	dataParams := bumo.Params{
-		KafkaJsonMapping: ct.Mapping2String(true, ""),
+		KafkaJsonMapping: ct.Mapping2StringJSONEachRowData(true),
 		LogField:         ct.RawLogField,
 		TimeField:        ct.TimeField,
 		Data: bumo.ParamsData{
@@ -235,7 +235,7 @@ func (c *Databend) CreateStorage(did int, database db2.BaseDatabase, ct view2.Re
 		},
 	}
 	streamParams := bumo.Params{
-		KafkaJsonMapping: ct.Mapping2String(true, ""),
+		KafkaJsonMapping: ct.Mapping2StringJSONEachRowStream(true),
 		LogField:         ct.RawLogField,
 		TimeField:        ct.TimeField,
 		Stream: bumo.ParamsStream{
@@ -1223,7 +1223,7 @@ func (c *Databend) storageViewOperator(typ, tid int, did int, table, customTimeF
 		whereCond = c.whereConditionSQLCurrent(current, ct.GetRawLogField())
 	}
 	viewSQL := c.execView(bumo.Params{
-		KafkaJsonMapping: ct.Mapping2String(false, ""),
+		KafkaJsonMapping: ct.Mapping2StringJSONEachRowView(),
 		LogField:         ct.RawLogField,
 		TimeField:        ct.TimeField,
 		Cluster:          databaseInfo.Cluster,

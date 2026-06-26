@@ -1229,7 +1229,7 @@ func (c *ClickHouseX) CreateStorage(did int, database db.BaseDatabase, ct view.R
 		return
 	}
 	dataParams := bumo.Params{
-		KafkaJsonMapping: ct.Mapping2String(true, ""),
+		KafkaJsonMapping: ct.Mapping2StringJSONEachRowData(true),
 		LogField:         ct.RawLogField,
 		TimeField:        ct.TimeField,
 		Data: bumo.ParamsData{
@@ -1238,7 +1238,7 @@ func (c *ClickHouseX) CreateStorage(did int, database db.BaseDatabase, ct view.R
 		},
 	}
 	streamParams := bumo.Params{
-		KafkaJsonMapping: ct.Mapping2String(true, ""),
+		KafkaJsonMapping: ct.Mapping2StringJSONEachRowStream(true),
 		LogField:         ct.RawLogField,
 		TimeField:        ct.TimeField,
 		Stream: bumo.ParamsStream{
@@ -1947,7 +1947,7 @@ func (c *ClickHouseX) updateSwitcherJSONEachRow(typ, tid int, did int, table, cu
 		rs = db.ReplicaStatusYes
 	}
 	viewSQL, err := c.execView(bumo.Params{
-		KafkaJsonMapping: ct.Mapping2String(false, ""),
+		KafkaJsonMapping: ct.Mapping2StringJSONEachRowView(),
 		LogField:         ct.RawLogField,
 		TimeField:        ct.TimeField,
 		Cluster:          databaseInfo.Cluster,

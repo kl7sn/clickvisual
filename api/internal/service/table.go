@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/json"
 	"strconv"
 
 	"github.com/gotomicro/ego/core/elog"
@@ -60,9 +59,6 @@ func IsCheckInner(createType int) bool {
 func StorageCreate(uid int, databaseInfo db.BaseDatabase, param view.ReqStorageCreate) (tableInfo db.BaseTable, err error) {
 	param.SourceMapping, err = mapping.Handle(param.Source, IsCheckInner(param.CreateType))
 	if err != nil {
-		return
-	}
-	if err = json.Unmarshal([]byte(param.Source), &param.SourceMapping); err != nil {
 		return
 	}
 	op, err := InstanceManager.Load(databaseInfo.Iid)

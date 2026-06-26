@@ -42,6 +42,7 @@ func GetTraceList(c *core.Context) {
 			TableName:  row.Name,
 			CreateType: row.CreateType,
 			Desc:       row.Desc,
+			Brokers:    row.Brokers,
 		})
 	}
 	c.JSONOK(res)

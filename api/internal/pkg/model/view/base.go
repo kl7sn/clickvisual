@@ -216,6 +216,7 @@ type (
 		TableName       string `json:"tableName"`
 		CreateType      int    `json:"createType"`
 		Desc            string `json:"desc"`
+		Brokers         string `json:"brokers"`
 		V3TableType     int    `json:"v3TableType"`
 		RelTraceTableId int    `json:"relTraceTableId"`
 	}

@@ -169,6 +169,72 @@ func (r *ReqStorageCreate) Mapping2String(withType bool, rawLogFieldParent strin
 	return res
 }
 
+func (r *ReqStorageCreate) Mapping2StringJSONEachRowStream(withType bool) string {
+	var res string
+	if len(r.SourceMapping.Data) == 0 {
+		return res
+	}
+	for _, v := range r.SourceMapping.Data {
+		if v.Parent != "" || r.isSkipField("", v.Key) {
+			continue
+		}
+		if res == "" {
+			res = v.Assemble(withType)
+			continue
+		}
+		res = fmt.Sprintf("%s\n%s", res, v.Assemble(withType))
+	}
+	return res
+}
+
+func (r *ReqStorageCreate) Mapping2StringJSONEachRowData(withType bool) string {
+	var res string
+	if len(r.SourceMapping.Data) == 0 {
+		return res
+	}
+	for _, v := range r.SourceMapping.Data {
+		if v.Parent != "" && !v.FromJSONString {
+			continue
+		}
+		if v.Parent == "" && r.isSkipField("", v.Key) {
+			continue
+		}
+		if v.Parent != "" && r.isSkipField("", v.Key) {
+			continue
+		}
+		if res == "" {
+			res = v.Assemble(withType)
+			continue
+		}
+		res = fmt.Sprintf("%s\n%s", res, v.Assemble(withType))
+	}
+	return res
+}
+
+func (r *ReqStorageCreate) Mapping2StringJSONEachRowView() string {
+	var res string
+	if len(r.SourceMapping.Data) == 0 {
+		return res
+	}
+	for _, v := range r.SourceMapping.Data {
+		if v.Parent != "" && !v.FromJSONString {
+			continue
+		}
+		if v.Parent == "" && r.isSkipField("", v.Key) {
+			continue
+		}
+		if v.Parent != "" && r.isSkipField("", v.Key) {
+			continue
+		}
+		if res == "" {
+			res = v.AssembleJSONEachRowView()
+			continue
+		}
+		res = fmt.Sprintf("%s\n%s", res, v.AssembleJSONEachRowView())
+	}
+	return res
+}
+
 type RespStorageAnalysisFields struct {
 	BaseFields []StorageAnalysisField `json:"baseFields"`
 	LogFields  []StorageAnalysisField `json:"logFields"`

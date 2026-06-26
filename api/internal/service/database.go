@@ -54,6 +54,7 @@ func DatabaseListFilterPms(uid int) (res []view2.RespDatabaseSimple, err error) 
 			TableName:       row.Name,
 			CreateType:      row.CreateType,
 			Desc:            row.Desc,
+			Brokers:         row.Brokers,
 			V3TableType:     row.V3TableType,
 			RelTraceTableId: row.TraceTableId,
 		}

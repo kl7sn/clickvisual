@@ -8,7 +8,7 @@ import TemplateTableILogtail from "@/pages/DataLogs/components/DataSourceMenu/Mo
 import { useModel } from "@umijs/max";
 import { useDebounceFn } from "ahooks";
 import { Form, FormInstance, message, Modal, Select } from "antd";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useIntl } from "umi";
 
 const { Option } = Select;
@@ -31,6 +31,8 @@ const ModalCreatedLogLibrary = (props: { onGetList: any }) => {
     doCreatedTableTemplate,
     doCreatedLogLibraryEachRow,
     doCreatedLocalLogLibraryBatch,
+    getLogLibraries,
+    logLibraryList,
     isAccessLogLibrary,
     onChangeIsAccessLogLibrary,
     onChangeIsLogLibraryAllDatabase,
@@ -39,6 +41,17 @@ const ModalCreatedLogLibrary = (props: { onGetList: any }) => {
   const [visibleSelectField, setVisibleSelectField] = useState<boolean>(false);
   const [mappingJson, setMappingJson] = useState<any>({});
   const [isCluster, setIsCluster] = useState<boolean>(false);
+  const brokerOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          logLibraryList
+            .map((item) => item.brokers)
+            .filter((item): item is string => !!item)
+        )
+      ).map((item) => ({ value: item })),
+    [logLibraryList]
+  );
 
   const { doGetInstanceList, instanceList } = useModel("instances");
 
@@ -159,6 +172,12 @@ const ModalCreatedLogLibrary = (props: { onGetList: any }) => {
       doGetInstanceList();
   }, [logLibraryCreatedModalVisible]);
 
+  useEffect(() => {
+    if (logLibraryCreatedModalVisible && addLogToDatabase?.id) {
+      getLogLibraries.run(addLogToDatabase.id);
+    }
+  }, [addLogToDatabase?.id, logLibraryCreatedModalVisible]);
+
   return (
     <Modal
       centered
@@ -266,6 +285,7 @@ const ModalCreatedLogLibrary = (props: { onGetList: any }) => {
                     formRef={logFormRef}
                     onConversionMappingJson={handleConversionMappingJson}
                     mode={mode}
+                    brokerOptions={brokerOptions}
                   />
                 );
             }

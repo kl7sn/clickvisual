@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/gotomicro/ego/core/elog"
@@ -14,9 +15,10 @@ type List struct {
 }
 
 type Item struct {
-	Key    string `json:"key"`
-	Typ    string `json:"value"`
-	Parent string `json:"parent"`
+	Key            string `json:"key"`
+	Typ            string `json:"value"`
+	Parent         string `json:"parent"`
+	FromJSONString bool   `json:"fromJsonString,omitempty"`
 }
 
 func (m *Item) Assemble(withType bool) string {
@@ -24,6 +26,26 @@ func (m *Item) Assemble(withType bool) string {
 		return fmt.Sprintf("`%s` %s,", m.Key, fieldReplace(m.Typ))
 	}
 	return fmt.Sprintf("`%s`,", m.Key)
+}
+
+func (m *Item) AssembleJSONEachRowView() (res string) {
+	if m.Parent == "" {
+		return m.Assemble(false)
+	}
+	field := fmt.Sprintf("`%s`, '%s'", m.Parent, m.Key)
+	if strings.Contains(m.Typ, "JSON") {
+		return fmt.Sprintf("toString(JSONExtractRaw(%s)) AS `%s`,", field, m.Key)
+	}
+	if m.Typ == "String" {
+		return fmt.Sprintf("JSONExtractString(%s) AS `%s`,", field, m.Key)
+	}
+	if m.Typ == "Float64" {
+		return fmt.Sprintf("JSONExtractFloat(%s) AS `%s`,", field, m.Key)
+	}
+	if m.Typ == "Bool" {
+		return fmt.Sprintf("JSONExtractBool(%s) AS `%s`,", field, m.Key)
+	}
+	return fmt.Sprintf("JSONExtractRaw(%s) AS `%s`,", field, m.Key)
 }
 
 func (m *Item) AssembleJSONAsString() (res string) {
@@ -57,10 +79,25 @@ func Handle(req string, checkInner bool) (res List, err error) {
 		elog.Error("Handle", elog.Any("req", req), elog.Any("err", err.Error()))
 		return
 	}
-	for k, v := range obj {
+	for _, k := range sortedKeys(obj) {
+		v := obj[k]
 		typ := fieldTypeJudgment(v)
 		if typ == FieldTypeJSON {
-			innerItem, errJson := handleJSON(k, v.(map[string]interface{}))
+			items = append(items, Item{
+				Key: k,
+				Typ: typ,
+			})
+			innerItem, errJson := handleJSON(k, v.(map[string]interface{}), false)
+			if errJson != nil {
+				return res, errJson
+			}
+			items = append(items, innerItem...)
+		} else if inner, ok := parseJSONStringObject(v); ok {
+			items = append(items, Item{
+				Key: k,
+				Typ: typ,
+			})
+			innerItem, errJson := handleJSON(k, inner, true)
 			if errJson != nil {
 				return res, errJson
 			}
@@ -81,29 +118,47 @@ func Handle(req string, checkInner bool) (res List, err error) {
 	return res, nil
 }
 
-func handleJSON(p string, req map[string]interface{}) (items []Item, err error) {
+func handleJSON(p string, req map[string]interface{}, fromJSONString bool) (items []Item, err error) {
 	items = make([]Item, 0)
 	// Converted to json string structure type, the need to pay attention to is the json string type;
-	for k, v := range req {
+	for _, k := range sortedKeys(req) {
+		v := req[k]
 		items = append(items, Item{
-			Key:    k,
-			Typ:    fieldTypeJudgmentInner(v),
-			Parent: p,
+			Key:            k,
+			Typ:            fieldTypeJudgmentInner(v),
+			Parent:         p,
+			FromJSONString: fromJSONString,
 		})
 	}
 	return
 }
 
+func sortedKeys(req map[string]interface{}) []string {
+	keys := make([]string, 0, len(req))
+	for k := range req {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
 // Filter 保证返回数据没有重复内容
 func filter(req List) (res List) {
 	res.Data = make([]Item, 0)
+	exists := make(map[string]bool)
 	for _, item := range req.Data {
-		if item.Parent != "" {
+		if item.Parent != "" && !item.FromJSONString {
 			continue
 		}
+		if exists[item.Key] {
+			continue
+		}
+		exists[item.Key] = true
 		res.Data = append(res.Data, Item{
-			Key: item.Key,
-			Typ: item.Typ,
+			Key:            item.Key,
+			Typ:            item.Typ,
+			Parent:         item.Parent,
+			FromJSONString: item.FromJSONString,
 		})
 	}
 	return res
@@ -114,6 +169,31 @@ func fieldReplace(current string) (after string) {
 		return "String"
 	}
 	return current
+}
+
+func parseJSONStringObject(req interface{}) (map[string]interface{}, bool) {
+	val, ok := req.(string)
+	if !ok || !json.Valid([]byte(val)) {
+		return nil, false
+	}
+	var obj map[string]interface{}
+	if err := json.Unmarshal([]byte(val), &obj); err != nil {
+		return nil, false
+	}
+	return obj, true
+}
+
+func isJSONObjectOrArray(req string) bool {
+	var val interface{}
+	if err := json.Unmarshal([]byte(req), &val); err != nil {
+		return false
+	}
+	switch val.(type) {
+	case map[string]interface{}, []interface{}:
+		return true
+	default:
+		return false
+	}
 }
 
 const (
@@ -151,7 +231,7 @@ func fieldTypeJudgmentInner(req interface{}) string {
 	switch reqType := req.(type) {
 	case string:
 		val = "String"
-		if json.Valid([]byte(req.(string))) {
+		if isJSONObjectOrArray(reqType) {
 			val = FieldTypeJSON
 		}
 	case []interface{}:

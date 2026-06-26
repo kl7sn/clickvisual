@@ -38,7 +38,9 @@ const SelectField = (props: SelectFieldType) => {
     onChange: onRawLogSelectChange,
     getCheckboxProps: (record: any) => ({
       disabled:
-        record.key === timeSelectedRowKeys[0] || record.value != "String",
+        !!record.parent ||
+        record.key === timeSelectedRowKeys[0] ||
+        record.value != "String",
     }),
   };
 
@@ -47,6 +49,7 @@ const SelectField = (props: SelectFieldType) => {
     onChange: onTimeSelectChange,
     getCheckboxProps: (record: any) => ({
       disabled:
+        !!record.parent ||
         record.key === rawLogSelectedRowKeys[0] ||
         !(record.value == "String" || record.value == "Float64"),
     }),
